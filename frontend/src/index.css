@@ -1,0 +1,433 @@
+/* Global styles for the entire application */
+html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif; /* A simple, common font */
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Basic reset */
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+/* --- Styles for App.jsx (Main Layout and Navigation) --- */
+.app-container {
+    min-height: 100vh;
+    background-color: #f0f2f5; /* Light grey background */
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    background-color: #007bff; /* Blue header */
+    padding: 15px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.navbar-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logout-button {
+    background-color: #dc3545; /* Red button */
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 70px); /* Adjust based on navbar height */
+    background-color: #f0f2f5;
+}
+
+.loading-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: #555;
+}
+
+/* Basic responsive adjustments for App */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .main-content {
+        padding: 10px;
+    }
+}
+
+/* --- Styles for LoginPage.jsx --- */
+.login-page-container {
+    min-height: calc(100vh - 70px); /* Adjust based on navbar height if present, otherwise 100vh */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f2f5;
+    padding: 20px;
+}
+
+.login-form-card {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.login-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-label {
+    display: block;
+    color: #555;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box; /* Include padding in width */
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.error-message {
+    background-color: #ffe0e0;
+    border: 1px solid #ff4d4d;
+    color: #cc0000;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.error-message strong {
+    margin-right: 5px;
+}
+
+.login-button {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+    background-color: #0056b3;
+}
+
+.login-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* --- Styles for ProductsPage.jsx --- */
+.products-page-container {
+    padding: 20px;
+    background-color: #f0f2f5;
+    min-height: calc(100vh - 70px); /* Adjust based on navbar height */
+}
+
+.products-page-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.products-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.filter-search-section {
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+}
+
+.filter-group {
+    width: 100%;
+}
+
+.filter-label {
+    display: block;
+    color: #555;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.filter-select,
+.filter-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid */
+    gap: 25px;
+}
+
+.product-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    border: 1px solid #e0e0e0;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.product-info {
+    padding: 15px;
+}
+
+.product-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-description {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Limit to 3 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product-price {
+    color: #007bff;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.product-category {
+    background-color: #e9ecef;
+    color: #555;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 15px;
+}
+
+.no-products-message {
+    grid-column: 1 / -1; /* Span all columns */
+    text-align: center;
+    color: #777;
+    font-size: 18px;
+    padding: 50px 0;
+}
+
+/* Modal for single product details */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 700px;
+    padding: 30px;
+    position: relative;
+    animation: fadeInScale 0.3s ease-out;
+}
+
+.modal-close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.modal-close-button:hover {
+    color: #333;
+}
+
+.modal-title {
+    font-size: 30px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.modal-image {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.modal-description {
+    color: #555;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.modal-price {
+    color: #007bff;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.modal-category {
+    background-color: #e9ecef;
+    color: #555;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.modal-id {
+    color: #888;
+    font-size: 14px;
+    text-align: right;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive adjustments for modal */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 20px;
+    }
+    .modal-title {
+        font-size: 24px;
+    }
+    .modal-price {
+        font-size: 20px;
+    }
+}
