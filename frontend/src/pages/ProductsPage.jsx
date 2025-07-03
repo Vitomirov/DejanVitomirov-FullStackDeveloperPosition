@@ -211,7 +211,7 @@ function ProductsPage({ navigateTo }) {
           </div>
         ) : (
           <div className="no-products-message">
-            No products found. Try adjusting your filters.
+            Nema proizvoda koji odgovaraju filterima.
           </div>
         )}
 
