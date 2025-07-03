@@ -1,15 +1,10 @@
-# Import necessary libraries
 from flask import Flask, request, jsonify
-from dotenv import load_dotenv
 import os
 import requests
 import re
-from bs4 import BeautifulSoup # Import BeautifulSoup
-import traceback # Import traceback module
-import json # Import json module
-
-# Load environment variables
-load_dotenv()
+from bs4 import BeautifulSoup
+import traceback
+import json
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -18,14 +13,13 @@ app = Flask(__name__)
 from flask_cors import CORS
 CORS(app)
 
-# --- External API Configuration ---
-EXTERNAL_API_BASE_URL = os.getenv("EXTERNAL_API_BASE_URL", "https://zadatak.konovo.rs")
+# --- External API Configuration (Hardcoded. In real application add through .env) ---
+EXTERNAL_API_BASE_URL = "https://zadatak.konovo.rs"
 EXTERNAL_LOGIN_URL = f"{EXTERNAL_API_BASE_URL}/login"
 EXTERNAL_PRODUCTS_URL = f"{EXTERNAL_API_BASE_URL}/products"
 
-# Test credentials
-TEST_USERNAME = os.getenv("TEST_USERNAME", "zadatak")
-TEST_PASSWORD = os.getenv("TEST_PASSWORD", "zadatak")
+TEST_USERNAME = "zadatak"
+TEST_PASSWORD = "zadatak"
 
 # --- Global variable for JWT token ---
 jwt_token = None
@@ -230,14 +224,12 @@ def get_single_product(product_id):
     found_product = next((p for p in processed_products if str(p.get('id')) == product_id), None)
 
     if found_product:
-        # ### AŽURIRANE LINIJE ZA POJEDINAČNI PROIZVOD ###
         if found_product.get('category') == 'Monitori':
             print(f"\n--- Detalji izabranog monitora: {found_product.get('name')} ---")
             print(f"  Originalna cena: {found_product.get('original_price')}")
             print(f"  Cena (uvećana za 10%): {found_product.get('price')}")
             print(f"  Kategorija: {found_product.get('category')}")
             print("--------------------------------------------------\n")
-        # ### KRAJ AŽURIRANIH LINIJA ###
         return jsonify(found_product), 200
     else:
         return jsonify({"error": "Product not found."}), 404

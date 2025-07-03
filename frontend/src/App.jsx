@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./services/AuthContext.jsx";
 import LoginPage from "./pages/LoginPage";
 import ProductsPage from "./pages/Productspage.jsx";
+import BackToTop from "./components/BackToTop.jsx";
 
 // Main App component
 function AppContent() {
@@ -53,7 +54,7 @@ function AppContent() {
     <div className="app-container">
       {/* Navigation for authenticated users */}
       {isAuthenticated && (
-        <nav className="navbar sticky-top">
+        <nav className="navbar">
           <img
             src="https://konovo.rs/wp-content/uploads/2023/03/konovo_logo_light.png"
             alt="Konovo Shop Logo"
@@ -65,6 +66,8 @@ function AppContent() {
         </nav>
       )}
       <main className="main-content">{content}</main>
+      {/* BackToTop komponenta je sada izvan navbara, ali unutar isAuthenticated bloka */}
+      {isAuthenticated && <BackToTop />}
     </div>
   );
 }
