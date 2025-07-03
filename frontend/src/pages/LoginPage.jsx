@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { useAuth } from "../services/AuthContext.jsx";
-// No local CSS import here, all styles will be in index.css
 
 function LoginPage({ navigateTo, errorMessage }) {
-  const [username, setUsername] = useState("zadatak"); // Pre-fill for convenience
-  const [password, setPassword] = useState("zadatak"); // Pre-fill for convenience
-  const { login, loading, error } = useAuth(); // Get login function, loading, and error from context
+  const [username, setUsername] = useState("zadatak");
+  const [password, setPassword] = useState("zadatak");
+  const { login, loading, error } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,6 +17,13 @@ function LoginPage({ navigateTo, errorMessage }) {
 
   return (
     <div className="login-page-container">
+      <nav className="navbar sticky-top">
+        <img
+          src="https://konovo.rs/wp-content/uploads/2023/03/konovo_logo_light.png"
+          alt="Konovo Shop Logo"
+          className="navbar-logo"
+        />
+      </nav>
       <div className="login-form-card">
         <h2 className="login-title">Login</h2>
         <form onSubmit={handleSubmit}>

@@ -30,7 +30,7 @@ function AppContent() {
   if (loading) {
     content = (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading...</div>
+        <div className="text-xl font-semibold text-gray-700">Učitavanje...</div>
       </div>
     );
   } else if (error && currentPage === "login") {
@@ -50,22 +50,21 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="app-container">
       {/* Navigation for authenticated users */}
       {isAuthenticated && (
-        <nav className="bg-blue-600 p-4 shadow-md flex justify-between items-center">
-          <h1 className="text-white text-2xl font-bold rounded-md px-2 py-1">
-            Konovo Shop
-          </h1>
-          <button
-            onClick={logout}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
-          >
-            Logout
+        <nav className="navbar sticky-top">
+          <img
+            src="https://konovo.rs/wp-content/uploads/2023/03/konovo_logo_light.png"
+            alt="Konovo Shop Logo"
+            className="navbar-logo"
+          />
+          <button onClick={logout} className="logout-button">
+            Odjavi se
           </button>
         </nav>
       )}
-      <main className="flex-grow">{content}</main>
+      <main className="main-content">{content}</main>
     </div>
   );
 }

@@ -3,7 +3,7 @@ html, body, #root {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: 'Arial', sans-serif; /* A simple, common font */
+    font-family: 'Arial', sans-serif;
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -17,31 +17,43 @@ html, body, #root {
 /* --- Styles for App.jsx (Main Layout and Navigation) --- */
 .app-container {
     min-height: 100vh;
-    background-color: #f0f2f5; /* Light grey background */
+    background-color: #f0f2f5;
     display: flex;
     flex-direction: column;
 }
 
 .navbar {
-    background-color: #007bff; /* Blue header */
+    background-color: #000000;
     padding: 15px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; 
+    position: relative;
     align-items: center;
     color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; 
 }
 
-.navbar-title {
-    font-size: 24px;
-    font-weight: bold;
+.navbar-logo {
+    max-width: 150px; 
+    height: auto;
+    display: block;
 }
+
 
 .logout-button {
-    background-color: #dc3545; /* Red button */
-    color: white;
+    background-color: #eeecec;
+    color: rgb(34, 33, 33);
     padding: 8px 15px;
     border: none;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
@@ -49,7 +61,7 @@ html, body, #root {
 }
 
 .logout-button:hover {
-    background-color: #c82333; /* Darker red on hover */
+    background-color: #d82f2f;
 }
 
 .main-content {
@@ -61,7 +73,7 @@ html, body, #root {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 70px); /* Adjust based on navbar height */
+    min-height: calc(100vh - 70px);
     background-color: #f0f2f5;
 }
 
@@ -74,8 +86,22 @@ html, body, #root {
 /* Basic responsive adjustments for App */
 @media (max-width: 768px) {
     .navbar {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: row;
+        justify-content: space-between; 
+        align-items: center;
+        gap: 0;
+        padding: 15px 10px;
+    }
+    .navbar-logo {
+        max-width: 100px;
+        margin-bottom: 0;
+    }
+    .logout-button {
+        position: absolute; 
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto; 
     }
     .main-content {
         padding: 10px;
@@ -84,7 +110,7 @@ html, body, #root {
 
 /* --- Styles for LoginPage.jsx --- */
 .login-page-container {
-    min-height: calc(100vh - 70px); /* Adjust based on navbar height if present, otherwise 100vh */
+    min-height: calc(100vh - 70px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -129,7 +155,7 @@ html, body, #root {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
-    box-sizing: border-box; /* Include padding in width */
+    box-sizing: border-box;
     transition: border-color 0.3s ease;
 }
 
@@ -179,7 +205,7 @@ html, body, #root {
 .products-page-container {
     padding: 20px;
     background-color: #f0f2f5;
-    min-height: calc(100vh - 70px); /* Adjust based on navbar height */
+    min-height: calc(100vh - 70px);
 }
 
 .products-page-content {
@@ -238,7 +264,7 @@ html, body, #root {
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 25px;
 }
 
@@ -283,7 +309,7 @@ html, body, #root {
     font-size: 14px;
     margin-bottom: 12px;
     display: -webkit-box;
-    -webkit-line-clamp: 3; /* Limit to 3 lines */
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -303,17 +329,9 @@ html, body, #root {
 .product-category {
     background-color: #e9ecef;
     color: #555;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 15px;
-}
-
-.no-products-message {
-    grid-column: 1 / -1; /* Span all columns */
-    text-align: center;
-    color: #777;
-    font-size: 18px;
-    padding: 50px 0;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 20px;
 }
 
 /* Modal for single product details */

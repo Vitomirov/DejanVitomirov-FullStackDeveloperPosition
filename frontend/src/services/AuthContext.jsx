@@ -9,10 +9,17 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Updates authentication status based on token presence.
   useEffect(() => {
     setIsAuthenticated(!!token);
   }, [token]);
 
+  /**
+   * Handles user login.
+   * @param {string} username - User's username.
+   * @param {string} password - User's password.
+   * @returns {Promise<object>} Login success status or error.
+   */
   const login = async (username, password) => {
     setLoading(true);
     setError(null);
@@ -30,12 +37,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Handles user logout.
+   */
   const logout = () => {
     localStorage.removeItem("jwtToken");
     setToken(null);
     setIsAuthenticated(false);
   };
 
+  // Context value provided to consumers.
   const authContextValue = {
     token,
     isAuthenticated,
@@ -52,6 +63,11 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+/**
+ * Hook to access authentication context.
+ * @returns {object} Auth context value.
+ * @throws {Error} If used outside AuthProvider.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

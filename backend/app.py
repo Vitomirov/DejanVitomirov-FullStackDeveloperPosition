@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 import os
 import requests
 import re
+from bs4 import BeautifulSoup # Import BeautifulSoup
+import traceback # Import traceback module
+import json # Import json module
 
 # Load environment variables
 load_dotenv()
@@ -27,27 +30,79 @@ TEST_PASSWORD = os.getenv("TEST_PASSWORD", "zadatak")
 # --- Global variable for JWT token ---
 jwt_token = None
 
+# --- Define known categories for "Ostalo" filtering ---
+# This list MUST match the values in your frontend dropdown, excluding "Svi proizvodi" and "Ostalo"
+KNOWN_CATEGORIES = [
+    "Monitori",
+    "Toneri i potrošni materijal",
+    "Mobilni/Fiksni telefoni i tableti",
+    "Slušalice",
+    "Torbe i rančevi",
+    "Štampači",
+    "Električni trotineti"
+]
+
 # --- Helper function for product processing ---
 def process_product_data(product):
     """
     Processes a single product:
+    - Maps external API keys to frontend-friendly keys.
     - Increases price by 10% for 'Monitori' category.
     - Replaces 'brzina' with 'performanse' (case-insensitive) in description.
+    - Cleans up description by removing HTML tags and newline characters.
     """
-    processed_product = product.copy()
+    processed_product = {}
 
-    # Increase price for 'Monitori'
-    if processed_product.get('category') == 'Monitori':
+    # Map keys from external API to expected frontend keys
+    processed_product['id'] = product.get('sif_product') # Map 'sif_product' to 'id'
+    processed_product['name'] = product.get('naziv')     # Map 'naziv' to 'name'
+
+    # Handle category name: attempt to decode literal Unicode escape sequences
+    category_name = product.get('categoryName', '')
+    if category_name:
         try:
-            current_price = float(processed_product.get('price', 0))
-            processed_product['price'] = round(current_price * 1.10, 2)
-        except ValueError:
-            pass
+            # Wrap the string in quotes to make it a valid JSON string, then load it
+            # This will correctly interpret literal \uXXXX sequences
+            processed_product['category'] = json.loads(f'"{category_name}"')
+        except json.JSONDecodeError:
+            # If it's not a valid JSON string (e.g., no literal \uXXXX), keep original
+            processed_product['category'] = category_name
+    else:
+        processed_product['category'] = ''
 
-    # Replace 'brzina' with 'performanse' in description
-    description = processed_product.get('description', '')
+    processed_product['image'] = product.get('imgsrc')   # Map 'imgsrc' to 'image'
+
+    # Handle price
+    current_price = product.get('price', 0)
+    try:
+        current_price = float(current_price)
+    except (ValueError, TypeError):
+        current_price = 0 # Default to 0 if price is not a valid number
+
+    # --- KLJUČNA PROMENA: Čuvamo originalnu cenu pre obrade ---
+    processed_product['original_price'] = round(current_price, 2)
+
+    # Increase price for 'Monitori' category
+    if processed_product.get('category') == 'Monitori':
+        processed_product['price'] = round(current_price * 1.10, 2)
+    else:
+        processed_product['price'] = round(current_price, 2) # Ensure it's rounded even if not monitor
+
+    # Clean up and replace "brzina" in description
+    description = product.get('description', '')
     if description:
-        processed_product['description'] = re.sub(r'brzina', 'performanse', description, flags=re.IGNORECASE)
+        # Use BeautifulSoup to remove all HTML tags
+        soup = BeautifulSoup(description, 'html.parser')
+        clean_description = soup.get_text(separator=' ') # Get text content, replacing tags with a space
+        
+        # Remove extra whitespace and newline characters
+        clean_description = re.sub(r'\s+', ' ', clean_description).strip()
+        clean_description = clean_description.replace('\r', '').replace('\n', '')
+        
+        # Replace "brzina" with "performanse" (case-insensitive)
+        processed_product['description'] = re.sub(r'brzina', 'performanse', clean_description, flags=re.IGNORECASE).strip()
+    else:
+        processed_product['description'] = ''
 
     return processed_product
 
@@ -78,6 +133,8 @@ def _fetch_and_process_all_products():
         print(f"Error communicating with external products API: {e}")
         return None, 500, f"Error fetching products: {e}"
     except Exception as e:
+        # Log the full traceback for unexpected errors
+        traceback.print_exc()
         print(f"Unexpected error fetching products: {e}")
         return None, 500, "An unexpected error occurred while fetching products."
 
@@ -139,12 +196,24 @@ def get_products():
     search_query = request.args.get('search')
 
     if category_filter:
-        processed_products = [p for p in processed_products if p.get('category') and p['category'].lower() == category_filter.lower()]
+        if category_filter.lower() == 'ostalo':
+            # Filter for categories NOT in the KNOWN_CATEGORIES list
+            processed_products = [
+                p for p in processed_products
+                if p.get('category') and p['category'] not in KNOWN_CATEGORIES
+            ]
+        else:
+            # Normal category filtering
+            processed_products = [
+                p for p in processed_products
+                if p.get('category') and p['category'].lower() == category_filter.lower()
+            ]
+
 
     if search_query:
         processed_products = [p for p in processed_products if
-                              (p.get('name') and search_query.lower() in p['name'].lower()) or
-                              (p.get('description') and search_query.lower() in p['description'].lower())]
+                               (p.get('name') and search_query.lower() in p['name'].lower()) or
+                               (p.get('description') and search_query.lower() in p['description'].lower())]
 
     return jsonify(processed_products), 200
 
@@ -161,6 +230,14 @@ def get_single_product(product_id):
     found_product = next((p for p in processed_products if str(p.get('id')) == product_id), None)
 
     if found_product:
+        # ### AŽURIRANE LINIJE ZA POJEDINAČNI PROIZVOD ###
+        if found_product.get('category') == 'Monitori':
+            print(f"\n--- Detalji izabranog monitora: {found_product.get('name')} ---")
+            print(f"  Originalna cena: {found_product.get('original_price')}")
+            print(f"  Cena (uvećana za 10%): {found_product.get('price')}")
+            print(f"  Kategorija: {found_product.get('category')}")
+            print("--------------------------------------------------\n")
+        # ### KRAJ AŽURIRANIH LINIJA ###
         return jsonify(found_product), 200
     else:
         return jsonify({"error": "Product not found."}), 404

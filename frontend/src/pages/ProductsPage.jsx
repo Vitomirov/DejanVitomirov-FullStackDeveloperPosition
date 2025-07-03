@@ -1,18 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../services/AuthContext.jsx";
-import { fetchProducts, fetchSingleProduct } from "../services/api.js";
-// We will not import any local CSS here, all styles will be in index.css
+import { fetchProducts, fetchSingleProduct } from "../services/api";
 
 function ProductsPage({ navigateTo }) {
   const { token, isAuthenticated } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // State for input values (what the user types immediately)
   const [categoryFilter, setCategoryFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState(null); // For single product details
 
-  // Fetch products when component mounts or filters change
+  // Debounced states for API calls (these change after a delay)
+  const [debouncedCategoryFilter, setDebouncedCategoryFilter] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  // State for selected product for modal
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  // Effect for debouncing category filter input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedCategoryFilter(categoryFilter);
+    }, 500); // 500ms delay before updating the debounced state
+
+    // Cleanup function: clear the timeout if categoryFilter changes before the delay
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [categoryFilter]); // Re-run this effect when categoryFilter changes
+
+  // Effect for debouncing search query input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500); // 500ms delay before updating the debounced state
+
+    // Cleanup function: clear the timeout if searchQuery changes before the delay
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]); // Re-run this effect when searchQuery changes
+
+  // Main effect to fetch products when debounced filters/search change, or auth state changes
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
@@ -20,114 +51,134 @@ function ProductsPage({ navigateTo }) {
       try {
         if (!isAuthenticated) {
           navigateTo("login"); // Redirect if not authenticated
-          return;
+          return; // Stop execution if not authenticated
         }
-        const data = await fetchProducts(token, categoryFilter, searchQuery);
+        // Use debounced values for the API call to reduce frequency
+        const data = await fetchProducts(
+          token,
+          debouncedCategoryFilter,
+          debouncedSearchQuery
+        );
         setProducts(data);
       } catch (err) {
         setError(err.message || "Failed to load products");
         console.error("Error fetching products:", err);
-        if (err.message.includes("Authorization token is missing")) {
-          navigateTo("login"); // Redirect to login if token is invalid/missing
+        // If authorization token is missing or invalid, redirect to login
+        if (
+          err.message.includes("Authorization token is missing") ||
+          err.message.includes("Unauthorized")
+        ) {
+          navigateTo("login");
         }
       } finally {
-        setLoading(false);
+        setLoading(false); // End loading after API call (success or failure)
       }
     };
 
     getProducts();
-  }, [token, isAuthenticated, categoryFilter, searchQuery, navigateTo]);
+  }, [
+    token,
+    isAuthenticated,
+    debouncedCategoryFilter,
+    debouncedSearchQuery,
+    navigateTo,
+  ]); // Dependencies for this effect
 
-  // Fetch single product details
+  // Function to handle clicking on a product to show details
   const handleProductClick = async (productId) => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); // Show loading for modal data fetch
+    setError(null); // Clear previous errors
     try {
       if (!isAuthenticated) {
         navigateTo("login");
         return;
       }
       const data = await fetchSingleProduct(token, productId);
-      setSelectedProduct(data);
+      setSelectedProduct(data); // Set the selected product to display in modal
     } catch (err) {
       setError(err.message || "Failed to load product details");
       console.error("Error fetching single product:", err);
-      if (err.message.includes("Authorization token is missing")) {
+      if (
+        err.message.includes("Authorization token is missing") ||
+        err.message.includes("Unauthorized")
+      ) {
         navigateTo("login");
       }
     } finally {
-      setLoading(false);
+      setLoading(false); // End loading for modal data fetch
     }
   };
 
+  // Function to close the product detail modal
   const handleCloseModal = () => {
     setSelectedProduct(null);
   };
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-text">Loading products...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-message-container">
-        <div className="error-message-card">
-          <strong>Error:</strong>
-          <span>{error}</span>
-        </div>
-      </div>
-    );
-  }
-
+  // Render the main products page content
   return (
     <div className="products-page-container">
       <div className="products-page-content">
-        <h2 className="products-title">Our Products</h2>
+        <h2 className="products-title">Naši proizvodi</h2>
 
-        {/* Filter and Search Section */}
+        {/* Filter and Search Section - This part is ALWAYS rendered to maintain input focus */}
         <div className="filter-search-section">
           <div className="filter-group">
             <label htmlFor="category" className="filter-label">
-              Filter by Category:
+              Traži po kategoriji:
             </label>
             <select
               id="category"
               className="filter-select"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              value={categoryFilter} // Binds to non-debounced state for immediate UI update
+              onChange={(e) => setCategoryFilter(e.target.value)} // Updates non-debounced state
             >
-              <option value="">All Categories</option>
+              <option value="">Svi proizvodi</option>
               <option value="Monitori">Monitori</option>
-              <option value="Tastature">Tastature</option>
-              <option value="Miševi">Miševi</option>
+              <option value="Toneri i potrošni materijal">
+                Toneri i potrosni materijal
+              </option>
+              <option value="Mobilni/Fiksni telefoni i tableti">
+                Mobilni/Fiksni telefoni i tableti
+              </option>
               <option value="Slušalice">Slušalice</option>
+              <option value="Torbe i rančevi">Torbe i rančevi</option>
+              <option value="Štampači">Štampači</option>
+              <option value="Električni trotineti">Električni trotineti</option>
+              <option value="Ostalo">Ostalo</option>
             </select>
           </div>
           <div className="filter-group">
             <label htmlFor="search" className="filter-label">
-              Search by Name/Description:
+              Traži po imenu, opisu:
             </label>
             <input
               type="text"
               id="search"
               className="filter-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="e.g., Gaming, RGB"
+              value={searchQuery} // Binds to non-debounced state for immediate UI update
+              onChange={(e) => setSearchQuery(e.target.value)} // Updates non-debounced state
+              placeholder="monitor, samsung..."
             />
           </div>
         </div>
 
-        {/* Products Grid */}
-        <div className="products-grid">
-          {products.length > 0 ? (
-            products.map((product) => (
+        {/* Conditional rendering for Products Grid, Loading, or Error messages */}
+        {loading && !selectedProduct ? ( // Show global loading only if no product modal is open
+          <div className="loading-container">
+            <div className="loading-text">Učitavanje ...</div>
+          </div>
+        ) : error && !selectedProduct ? ( // Show global error only if no product modal is open
+          <div className="error-message-container">
+            <div className="error-message-card">
+              <strong>Error:</strong>
+              <span>{error}</span>
+            </div>
+          </div>
+        ) : products.length > 0 ? (
+          <div className="products-grid">
+            {products.map((product) => (
               <div
-                key={product.id}
+                key={product.id} // Ensure product.id is unique and stable
                 className="product-card"
                 onClick={() => handleProductClick(product.id)}
               >
@@ -156,15 +207,15 @@ function ProductsPage({ navigateTo }) {
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="no-products-message">
-              No products found. Try adjusting your filters.
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="no-products-message">
+            No products found. Try adjusting your filters.
+          </div>
+        )}
 
-        {/* Product Detail Modal */}
+        {/* Product Detail Modal - Conditionally rendered as an overlay */}
         {selectedProduct && (
           <div className="modal-overlay">
             <div className="modal-content">

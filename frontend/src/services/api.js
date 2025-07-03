@@ -3,8 +3,8 @@ const API_BASE_URL = "http://127.0.0.1:5000";
 
 /**
  * Sends a login request to the backend.
- * @param {string} username - User's username.
- * @param {string} password - User's password.
+ * @param {string} username
+ * @param {string} password
  * @returns {Promise<object>} - A promise that resolves with the login data (including token) or rejects with an error.
  */
 export const loginUser = async (username, password) => {
