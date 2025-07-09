@@ -73,7 +73,7 @@ def process_product_data(product):
     except (ValueError, TypeError):
         current_price = 0 # Default to 0 if price is not a valid number
 
-    # --- KLJUČNA PROMENA: Čuvamo originalnu cenu pre obrade ---
+    # --- KEY CHANGE: We store the original price before processing ---
     processed_product['original_price'] = round(current_price, 2)
 
     # Increase price for 'Monitori' category
@@ -178,6 +178,60 @@ def login():
 @app.route('/products', methods=['GET'])
 def get_products():
     """
+    Fetches and processes products, requires JWT token, supports filtering, search, and pagination.
+    """
+    processed_products, status_code, error_message = _fetch_and_process_all_products()
+
+    if error_message:
+        return jsonify({"error": error_message}), status_code
+
+    # Initialize 'filtered_products' with all processed products.
+    # This list will be progressively filtered.
+    filtered_products = processed_products
+
+    # --- Step 1: Apply filtering and search ---
+    category_filter = request.args.get('category')
+    search_query = request.args.get('search')
+
+    if category_filter:
+        if category_filter.lower() == 'ostalo':
+            filtered_products = [
+                p for p in filtered_products # Operate on the current filtered_products list
+                if p.get('category') and p['category'] not in KNOWN_CATEGORIES
+            ]
+        else:
+            filtered_products = [
+                p for p in filtered_products # Operate on the current filtered_products list
+                if p.get('category') and p['category'].lower() == category_filter.lower()
+            ]
+
+    if search_query:
+        filtered_products = [p for p in filtered_products if # Operate on the current filtered_products list
+                               (p.get('name') and search_query.lower() in p['name'].lower()) or
+                               (p.get('description') and search_query.lower() in p['description'].lower())]
+
+    # --- Step 2: Implement Pagination Logic on the filtered_products ---
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 20, type=int)
+
+    # Calculate the total number of products AFTER all filters have been applied.
+    # THIS `filtered_products` IS NOW GUARANTEED TO BE DEFINED AND HOLD THE CORRECTLY FILTERED LIST.
+    total_products_count = len(filtered_products)
+
+    # Calculate the start and end indices for slicing the list of products.
+    start_index = (page - 1) * limit
+    end_index = start_index + limit
+
+    # Slice the filtered products to get only the ones for the current page.
+    paginated_products = filtered_products[start_index:end_index]
+
+    # --- Step 3: Return the paginated products AND the total count ---
+    return jsonify({
+        "products": paginated_products,
+        "total_products": total_products_count
+    }), 200
+
+    """
     Fetches and processes products, requires JWT token, supports filtering and search.
     """
     processed_products, status_code, error_message = _fetch_and_process_all_products()
@@ -209,7 +263,28 @@ def get_products():
                                (p.get('name') and search_query.lower() in p['name'].lower()) or
                                (p.get('description') and search_query.lower() in p['description'].lower())]
 
-    return jsonify(processed_products), 200
+    # --- Implement Pagination Logic ---
+    # Get 'page' and 'limit' from query parameters.
+    # 'page' is the current page number (e.g., 1, 2, 3...). Default to 1.
+    # 'limit' is the number of items per page. Default to 20.
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 20, type=int)
+
+    # Calculate the total number of products AFTER all filters have been applied.
+    # This is crucial for the frontend to determine total pages.
+    total_products_count = len(filtered_products)
+
+    # Calculate the start and end indices for slicing the list of products.
+    start_index = (page - 1) * limit
+    end_index = start_index + limit
+
+    # Slice the filtered products to get only the ones for the current page.
+    paginated_products = filtered_products[start_index:end_index]                            
+
+    return jsonify({
+        "products": paginated_products,  # <-- Use the paginated list
+        "total_products": total_products_count # <-- Include the total count
+    }), 200
 
 @app.route('/products/<string:product_id>', methods=['GET'])
 def get_single_product(product_id):

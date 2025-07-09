@@ -16,6 +16,11 @@ function ProductsPage({ navigateTo }) {
   const [debouncedCategoryFilter, setDebouncedCategoryFilter] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const productsPerPage = 20; // Number of products to show per page
+
   // State for selected product for modal
   const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -23,6 +28,7 @@ function ProductsPage({ navigateTo }) {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedCategoryFilter(categoryFilter);
+      setCurrentPage(1); // Reset to first page when filter changes
     }, 500); // 500ms delay before updating the debounced state
 
     // Cleanup function: clear the timeout if categoryFilter changes before the delay
@@ -35,6 +41,7 @@ function ProductsPage({ navigateTo }) {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
+      setCurrentPage(1); // Reset to first page when search query changes
     }, 500); // 500ms delay before updating the debounced state
 
     // Cleanup function: clear the timeout if searchQuery changes before the delay
@@ -53,13 +60,20 @@ function ProductsPage({ navigateTo }) {
           navigateTo("login"); // Redirect if not authenticated
           return; // Stop execution if not authenticated
         }
+
         // Use debounced values for the API call to reduce frequency
-        const data = await fetchProducts(
+        // Pass currentPage and productsPerPage to the API
+        const response = await fetchProducts(
           token,
           debouncedCategoryFilter,
-          debouncedSearchQuery
+          debouncedSearchQuery,
+          currentPage, // New: current page
+          productsPerPage // New: products per page
         );
-        setProducts(data);
+
+        // Assuming your backend now returns an object like { products: [...], totalProducts: N }
+        setProducts(response.products);
+        setTotalPages(Math.ceil(response.totalProducts / productsPerPage)); // Calculate total pages
       } catch (err) {
         setError(err.message || "Failed to load products");
         console.error("Error fetching products:", err);
@@ -81,6 +95,8 @@ function ProductsPage({ navigateTo }) {
     isAuthenticated,
     debouncedCategoryFilter,
     debouncedSearchQuery,
+    currentPage, // Add currentPage to dependencies
+    productsPerPage, // Add productsPerPage to dependencies (if it could change, otherwise optional)
     navigateTo,
   ]); // Dependencies for this effect
 
@@ -112,6 +128,37 @@ function ProductsPage({ navigateTo }) {
   // Function to close the product detail modal
   const handleCloseModal = () => {
     setSelectedProduct(null);
+  };
+
+  // Pagination handlers
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxButtons = 4; // Max number of page buttons to show
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+    if (endPage - startPage + 1 < maxButtons) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`pagination-button ${currentPage === i ? "active" : ""}`}
+        >
+          {i}
+        </button>
+      );
+    }
+    return buttons;
   };
 
   // Render the main products page content
@@ -175,40 +222,63 @@ function ProductsPage({ navigateTo }) {
             </div>
           </div>
         ) : products.length > 0 ? (
-          <div className="products-grid">
-            {products.map((product) => (
-              <div
-                key={product.id} // Ensure product.id is unique and stable
-                className="product-card"
-                onClick={() => handleProductClick(product.id)}
-              >
-                <img
-                  src={
-                    product.image ||
-                    `https://placehold.co/400x300/e0e0e0/333333?text=Product+${product.id}`
-                  }
-                  alt={product.name}
-                  className="product-image"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = `https://placehold.co/400x300/e0e0e0/333333?text=Product+${product.id}`;
-                  }}
-                />
-                <div className="product-info">
-                  <h3 className="product-name">{product.name}</h3>
-                  <p className="product-description">{product.description}</p>
-                  <div className="product-footer">
-                    <span className="product-price">
-                      ${product.price ? product.price.toFixed(2) : "N/A"}
-                    </span>
-                    <span className="product-category">
-                      {product.category || "Uncategorized"}
-                    </span>
+          <>
+            <div className="products-grid">
+              {products.map((product) => (
+                <div
+                  key={product.id} // Ensure product.id is unique and stable
+                  className="product-card"
+                  onClick={() => handleProductClick(product.id)}
+                >
+                  <img
+                    src={
+                      product.image ||
+                      `https://placehold.co/400x300/e0e0e0/333333?text=Product+${product.id}`
+                    }
+                    alt={product.name}
+                    className="product-image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://placehold.co/400x300/e0e0e0/333333?text=Product+${product.id}`;
+                    }}
+                  />
+                  <div className="product-info">
+                    <h3 className="product-name">{product.name}</h3>
+                    <p className="product-description">{product.description}</p>
+                    <div className="product-footer">
+                      <span className="product-price">
+                        ${product.price ? product.price.toFixed(2) : "N/A"}
+                      </span>
+                      <span className="product-category">
+                        {product.category || "Uncategorized"}
+                      </span>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="pagination-container">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="pagination-button"
+                >
+                  Prethodna
+                </button>
+                {renderPaginationButtons()}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="pagination-button"
+                >
+                  Sledeća
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         ) : (
           <div className="no-products-message">
             Nema proizvoda koji odgovaraju filterima.

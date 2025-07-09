@@ -32,21 +32,35 @@ export const loginUser = async (username, password) => {
 };
 
 /**
- * Fetches products from the backend.
+ * Fetches products from the backend with support for filtering, searching, and pagination.
  * @param {string} token - JWT token for authorization.
  * @param {string} [category] - Optional category to filter products.
  * @param {string} [search] - Optional search query for product name/description.
- * @returns {Promise<Array<object>>} - A promise that resolves with an array of products.
+ * @param {number} [page=1] - The current page number for pagination. Defaults to 1.
+ * @param {number} [limit=20] - The number of products per page. Defaults to 20.
+ * @returns {Promise<object>} - A promise that resolves with an object containing `products` (array) and `total_products` (number).
  */
-export const fetchProducts = async (token, category = "", search = "") => {
+export const fetchProducts = async (
+  token,
+  category = "",
+  search = "",
+  page = 1,
+  limit = 20
+) => {
   try {
     let url = new URL(`${API_BASE_URL}/products`);
+
+    // Append existing filters
     if (category) {
       url.searchParams.append("category", category);
     }
     if (search) {
       url.searchParams.append("search", search);
     }
+
+    // --- NEW: Append pagination parameters ---
+    url.searchParams.append("page", page);
+    url.searchParams.append("limit", limit);
 
     const response = await fetch(url.toString(), {
       method: "GET",
@@ -59,10 +73,24 @@ export const fetchProducts = async (token, category = "", search = "") => {
     const data = await response.json();
 
     if (!response.ok) {
+      // Backend should send an 'error' key if something goes wrong
       throw new Error(data.error || "Failed to fetch products");
     }
 
-    return data; // Array of processed product objects
+    // --- NEW: Expect and return an object with products and total_products ---
+    // Your Flask backend should return a JSON like:
+    // { "products": [...], "total_products": N }
+    if (data.products && typeof data.total_products === "number") {
+      return {
+        products: data.products,
+        totalProducts: data.total_products, // Renamed to totalProducts for consistency with React state
+      };
+    } else {
+      // Fallback or error if backend structure is not as expected
+      throw new Error(
+        "Invalid product data received from backend. Missing 'products' or 'total_products'."
+      );
+    }
   } catch (error) {
     console.error("Fetch products API error:", error);
     throw error;
