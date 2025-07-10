@@ -386,6 +386,7 @@ html, body, #root {
 }
 
 /* Modal for single product details */
+/* Modal for single product details */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -397,18 +398,37 @@ html, body, #root {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: 20px;
+    padding: 20px; /* Provides padding around the modal itself */
 }
 
 .modal-content {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    /* align-items: right; /* <-- INVALID VALUE, REMOVE OR CHANGE */
+    align-items: center; /* Center content horizontally within the modal */
     width: 100%;
-    max-width: 700px;
+    max-width: 800px; /* INCREASED MAX-WIDTH to allow more space for side-by-side content */
     padding: 30px;
     position: relative;
     animation: fadeInScale 0.3s ease-out;
+    max-height: 90vh; /* Limit modal height to viewport height */
+    overflow-y: auto; /* Allow scrolling within the modal if content overflows */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.modal-body-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start; /* Align image and description to the top */
+    gap: 30px; /* INCREASED GAP for better separation */
+    width: 100%; /* Take full width of modal content */
+    margin-top: 20px; /* Fixed margin */
+    margin-bottom: 20px; /* Fixed margin */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    justify-content: center; /* Center items if they wrap */
 }
 
 .modal-close-button {
@@ -432,33 +452,67 @@ html, body, #root {
     font-weight: bold;
     color: #333;
     margin-bottom: 15px;
+    text-align: center; /* Center align title */
+    word-break: break-word; /* Allow long titles to break */
 }
 
 .modal-image {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
+    /* height: 200px; /* <-- REMOVE FIXED HEIGHT TO AVOID SQUISHING/STRETCHING */
+    width: 40%; /* Give it a percentage width, or a fixed max-width */
+    max-width: 250px; /* Example: limit maximum width */
+    height: auto; /* MAINTAIN ASPECT RATIO */
+    object-fit: contain; /* BETTER FOR PRODUCT IMAGES TO SHOW WHOLE IMAGE */
     object-position: center;
     border-radius: 8px;
-    margin-bottom: 20px;
+    /* margin-bottom: 10px; /* Adjust or remove if it causes extra space with flex */
+    flex-shrink: 0; /* Prevent image from shrinking if content is too wide */
 }
 
-.modal-description {
-    color: #555;
-    font-size: 16px;
+.modal-description-container {
+    /* This container holds your parsed description paragraphs */
+    flex-grow: 1; /* Allow this container to take up remaining space */
+    min-width: 350px; /* Set a minimum width for the description container before wrapping */
+    text-align: left; /* Align text left for readability */
+    padding: 0 10px; /* Adjust padding if needed, often not necessary if gap is used */
+    max-height: 250px; /* Limit height and allow scrolling if description is very long */
+    overflow-y: auto; /* Enable vertical scrolling */
+    color: #444;
+    font-size: 1em;
     line-height: 1.6;
-    margin-bottom: 20px;
+}
+
+.modal-description-item {
+    margin-bottom: 5px; /* Adds a small space between each description line */
+    line-height: 1.4;
+    color: #333;
+    font-size: 0.95em;
+    display: block; /* **CRUCIAL: Ensures each item is on its own line** */
+    padding-left: 0;
+    padding-right: 0;
+    white-space: normal; /* Allow text to wrap naturally */
+    word-break: break-word; /* Break long words if necessary */
+}
+
+.modal-description-item strong {
+    color: #555;
+    min-width: 120px; /* This helps align description values */
+    display: inline-block; /* Essential for `min-width` to work */
+    margin-right: 5px; /* Space between key and value */
+    vertical-align: top; /* Aligns key to the top if value wraps to multiple lines */
 }
 
 .modal-footer {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+    align-items: center; /* Align items vertically in the middle */
+    width: 100%; /* Take full width of modal content */
+    margin-top: 15px; /* Add some space above the footer */
+    padding-top: 15px; /* Add padding above content */
+    border-top: 1px solid #eee; /* Visual separator */
 }
 
 .modal-price {
-    color: #007bff;
+    color: #28a745; /* Changed to a standard green, similar to your first image */
     font-weight: bold;
     font-size: 24px;
 }
@@ -475,6 +529,41 @@ html, body, #root {
     color: #888;
     font-size: 14px;
     text-align: right;
+    width: 100%; 
+    margin-top: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 20px;
+        max-width: 95%;
+    }
+    .modal-body-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    .modal-image {
+        max-width: 80%;
+        width: auto;
+        height: auto;
+    }
+    .modal-description-container {
+        min-width: unset;
+        max-height: none;
+        overflow-y: visible;
+        padding: 0;
+    }
+    .modal-footer {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    .modal-price, .modal-category, .modal-id {
+        text-align: center;
+        width: 100%;
+    }
 }
 
 @keyframes fadeInScale {
