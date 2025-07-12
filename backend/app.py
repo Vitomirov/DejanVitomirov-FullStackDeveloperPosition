@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import os
+import os   #for .env files
 import requests
 import re
 from bs4 import BeautifulSoup
@@ -210,7 +210,7 @@ def get_products():
                                (p.get('name') and search_query.lower() in p['name'].lower()) or
                                (p.get('description') and search_query.lower() in p['description'].lower())]
 
-    # --- Step 2: Implement Pagination Logic on the filtered_products ---
+    # --- Implement Pagination Logic on the filtered_products ---
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 20, type=int)
 
@@ -229,61 +229,6 @@ def get_products():
     return jsonify({
         "products": paginated_products,
         "total_products": total_products_count
-    }), 200
-
-    """
-    Fetches and processes products, requires JWT token, supports filtering and search.
-    """
-    processed_products, status_code, error_message = _fetch_and_process_all_products()
-
-    if error_message:
-        return jsonify({"error": error_message}), status_code
-
-    # Apply filtering and search
-    category_filter = request.args.get('category')
-    search_query = request.args.get('search')
-
-    if category_filter:
-        if category_filter.lower() == 'ostalo':
-            # Filter for categories NOT in the KNOWN_CATEGORIES list
-            processed_products = [
-                p for p in processed_products
-                if p.get('category') and p['category'] not in KNOWN_CATEGORIES
-            ]
-        else:
-            # Normal category filtering
-            processed_products = [
-                p for p in processed_products
-                if p.get('category') and p['category'].lower() == category_filter.lower()
-            ]
-
-
-    if search_query:
-        processed_products = [p for p in processed_products if
-                               (p.get('name') and search_query.lower() in p['name'].lower()) or
-                               (p.get('description') and search_query.lower() in p['description'].lower())]
-
-    # --- Implement Pagination Logic ---
-    # Get 'page' and 'limit' from query parameters.
-    # 'page' is the current page number (e.g., 1, 2, 3...). Default to 1.
-    # 'limit' is the number of items per page. Default to 20.
-    page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', 20, type=int)
-
-    # Calculate the total number of products AFTER all filters have been applied.
-    # This is crucial for the frontend to determine total pages.
-    total_products_count = len(filtered_products)
-
-    # Calculate the start and end indices for slicing the list of products.
-    start_index = (page - 1) * limit
-    end_index = start_index + limit
-
-    # Slice the filtered products to get only the ones for the current page.
-    paginated_products = filtered_products[start_index:end_index]                            
-
-    return jsonify({
-        "products": paginated_products,  # <-- Use the paginated list
-        "total_products": total_products_count # <-- Include the total count
     }), 200
 
 @app.route('/products/<string:product_id>', methods=['GET'])

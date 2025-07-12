@@ -17,7 +17,7 @@ function BackToTop() {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth", // Smooth scroll animation
+      behavior: "smooth",
     });
   };
 
@@ -34,7 +34,7 @@ function BackToTop() {
     <button
       className={`back-to-top-arrow ${isVisible ? "visible" : ""}`}
       onClick={scrollToTop}
-      title="Idi na vrh" // Tooltip for accessibility
+      title="Idi na vrh"
     >
       &#x2191; {/* Unicode character for an upward arrow */}
     </button>
